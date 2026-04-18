@@ -1,5 +1,5 @@
 # -------------------------------------------------------------
-# EchoVault — Password Analysis & ML Scoring w/ Random Forest Clf
+# EchoVault — Password Analysis & ML Scoring w/ Random Forest clf
 # Author: Michael Togbe
 # HackUMBC Mini Hackathon — April 2026
 # -------------------------------------------------------------
