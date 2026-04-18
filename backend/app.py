@@ -6,6 +6,10 @@ from flask_cors import CORS
 from gemini_prompt_return import analyze_passwords
 from password_analysis import score_passwords
 
+# password_analysis.py uses paths like data/password_model.pkl relative to CWD
+_BACKEND_DIR = Path(__file__).resolve().parent
+os.chdir(_BACKEND_DIR)
+
 app = Flask(__name__)
 CORS(app)
 
@@ -79,11 +83,14 @@ def analyze():
         return jsonify({"error": "Need at least 2 passwords"}), 400
 
     try:
-        
-        scores = get_crackability_score(passwords)
-        ai_report = analyze_passwords(passwords, scores)
-        
-        
+        ml_rows = score_passwords(passwords)
+        scores = scores_dict_from_ml_rows(passwords, ml_rows)
+        try:
+            ai_report = analyze_passwords(passwords, scores)
+        except Exception as ai_error:
+            print(f"Gemini unavailable, using fallback report: {ai_error}")
+            ai_report = build_fallback_report(passwords, scores, str(ai_error))
+
         return jsonify({
             "scores": scores,
             "ml_scores": ml_rows,
