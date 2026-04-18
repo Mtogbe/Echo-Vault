@@ -156,36 +156,40 @@ def score_passwords(passwords: list[str]) -> list[dict]:
 #Testing 
 if __name__ == "__main__":
     test_passwords = [
-        # Should be critical (very weak)
-        "123456",
-        "password",
-        "qwerty123",
-        "iloveyou",
-        "admin123",
-        "letmein",
-        
-        # Should be high (weak)
-        "fluffy2015",
-        "Fluffy@2016",
-        "ilovefluffy99",
-        "Michael1990",
-        "Soccer@2020",
+    # CRITICAL (should be 75-100)
+    "letmein",
+    "baseball",
+    "welcome",
+    "shadow",
+    "master",
+    "666666",
 
-        # Should be medium (moderate)
-        "Tr0ub4dor&3",
-        "P@ssw0rd123!",
-        "Hello$World99",
+    # HIGH (should be 50-75)
+    "Jennifer1995",
+    "Dallas2021!",
+    "Lakers@2016",
+    "Pepper2014",
+    "Ranger99!",
+    "Chicago2018",
 
-        # Should be low (strong)
-        "X7#mK$pQ2!vL",
-        "9^Rz!mXqP#2wK$",
-        "vT8@nQ!3kZ#mW$5",
-        "correct-horse-battery-staple99!A",
+    # MEDIUM (should be 25-50)
+    "Wh1skey@Night",
+    "Blu3$Berry99",
+    "Fr0zen!Lake22",
+    "M0untain$Top1",
+    "Purpl3@Rain55",
+
+    # LOW (should be 0-25)
+    "nP$8vL!3qW#mZx",
+    "Ry7@kT!2mX$pQw",
+    "Bv#9Lq$3Nz!wKm",
+    "Jx$5Rp!8Wn#qTv",
+    "Mw@4Yz$7Hk!rNp",
     ]
 
     print(f"\n{'Password':<35} {'Score':<10} {'Crackability'}")
     print("-" * 60)
-    
+
     results = score_passwords(test_passwords)
     for r in results:
         print(f"{r['password']:<35} {r['score']:<10} {r['crackability']}")
