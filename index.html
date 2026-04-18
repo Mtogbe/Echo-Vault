@@ -25,10 +25,10 @@
       min-height: 100vh;
       font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at 10% 10%, #232d50 0%, transparent 36%),
-        radial-gradient(circle at 85% 15%, #2a1a5d 0%, transparent 34%),
-        linear-gradient(165deg, var(--bg-1), var(--bg-2));
+      background: url("image2.avif");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       padding: 2rem 1rem 3rem;
     }
 
@@ -44,10 +44,18 @@
       border: 1px solid var(--border);
       border-radius: 18px;
       backdrop-filter: blur(12px);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 16px 40px rgba(62, 20, 198, 0.35);
       padding: 1.15rem;
     }
+    .panel {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
+    .panel:hover {
+      transform: translateY(-20px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    }
+    
     .hero {
       display: flex;
       justify-content: space-between;
@@ -120,6 +128,22 @@
       background: linear-gradient(110deg, var(--primary), var(--primary-2));
       box-shadow: 0 10px 22px rgba(71, 78, 255, 0.35);
       transition: transform 0.16s ease, filter 0.16s ease;
+    }
+
+    button::after {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    button:hover::after {
+      opacity: 1;
     }
 
     button:hover { transform: translateY(-1px); filter: brightness(1.06); }
@@ -223,7 +247,8 @@
     .bar > span {
       display: block;
       height: 100%;
-      background: linear-gradient(90deg, #5ed1ff, #9e63ff);
+      background: linear-gradient(90deg, #47d7ac, #ffd166, #ff6b81);
+      box-shadow: 0 0 10px rgba(124,92,255,0.6);
     }
 
     ul {
@@ -234,15 +259,20 @@
 
     li { margin: 0.25rem 0; }
     .hidden { display: none; }
+
+    h1 {
+      margin: 0;
+      font-size: 4rem;
+    }
+
   </style>
 </head>
 <body>
   <main class="container">
     <section class="panel hero">
       <div>
-        <span class="badge">Echo Vault</span>
-        <h1>Password Psychology Analyzer</h1>
-        <p>Paste at least two passwords and get crackability + AI-driven pattern intelligence from your backend.</p>
+        <h1>Echo Vault</h1> <p>By Michael Togbe, Anugrah Zachary, Nahom Kassaye</p>
+        <h2>Type atleast two passwords and get your crackability score!</h2>
       </div>
     </section>
 
@@ -250,7 +280,7 @@
       <label for="passwordInput">Passwords (one per line)</label>
       <textarea id="passwordInput" placeholder="Dragon2022!&#10;Dragon2023!&#10;Dragon2024*"></textarea>
       <div class="controls">
-        <span class="hint">Backend target: <code id="backendTarget"></code></span>
+        <span class="hint" style="display: none;">Backend target: <code id="backendTarget"></code></span>
         <button id="analyzeBtn">Analyze Password Patterns</button>
       </div>
       <div id="status" class="status hidden"></div>
@@ -267,7 +297,7 @@
         <div class="chips" id="patternChips"></div>
       </article>
       <article class="panel">
-        <h2>Predicted Attacker Wordlist</h2>
+        <h2>Likely Password Guesses</h2>
         <ul id="wordlist"></ul>
       </article>
       <article class="panel">
@@ -448,6 +478,9 @@
         analyzeBtn.disabled = false;
       }
     });
+
+    
   </script>
+  
 </body>
 </html>
