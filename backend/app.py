@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from gemini_service import analyze_passwords
+from password_analysis import score_passwords
 
 app = Flask(__name__)
 CORS(app)
@@ -21,7 +22,7 @@ def analyze():
 
     try:
         
-        scores = get_crackability_score(passwords)
+        scores = score_passwords(passwords)
         ai_report = analyze_passwords(passwords, scores)
         
         
