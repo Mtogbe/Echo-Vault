@@ -1,11 +1,453 @@
 <!DOCTYPE html>
-<html land="en">
-<head> 
-    <title>EchoVault</title>
-</head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Echo Vault | Password Psychology Analyzer</title>
+  <style>
+    :root {
+      --bg-1: #090b13;
+      --bg-2: #131a2f;
+      --primary: #7c5cff;
+      --primary-2: #33d1ff;
+      --text: #eff2ff;
+      --muted: #aab4d2;
+      --card: rgba(17, 22, 40, 0.62);
+      --border: rgba(255, 255, 255, 0.12);
+      --danger: #ff6b81;
+      --ok: #47d7ac;
+    }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, #232d50 0%, transparent 36%),
+        radial-gradient(circle at 85% 15%, #2a1a5d 0%, transparent 34%),
+        linear-gradient(165deg, var(--bg-1), var(--bg-2));
+      padding: 2rem 1rem 3rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+      padding: 1.15rem;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      border: 1px solid rgba(124, 92, 255, 0.6);
+      color: #c5bcff;
+      display: inline-block;
+      border-radius: 999px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.02em;
+      margin-bottom: 0.55rem;
+      background: rgba(124, 92, 255, 0.14);
+    }
+
+    h1 { margin: 0; font-size: clamp(1.4rem, 2.9vw, 2.3rem); }
+    p { margin: 0.45rem 0 0; color: var(--muted); line-height: 1.4; }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.45rem;
+      letter-spacing: 0.01em;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      background: rgba(9, 11, 21, 0.72);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem;
+      font-size: 0.96rem;
+      line-height: 1.35;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    textarea:focus {
+      border-color: rgba(51, 209, 255, 0.8);
+      box-shadow: 0 0 0 3px rgba(51, 209, 255, 0.2);
+    }
+
+    .controls {
+      margin-top: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .hint { color: var(--muted); font-size: 0.87rem; }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 0.7rem 1.15rem;
+      color: white;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      background: linear-gradient(110deg, var(--primary), var(--primary-2));
+      box-shadow: 0 10px 22px rgba(71, 78, 255, 0.35);
+      transition: transform 0.16s ease, filter 0.16s ease;
+    }
+
+    button:hover { transform: translateY(-1px); filter: brightness(1.06); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 840px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .status {
+      margin-top: 0.95rem;
+      border-radius: 10px;
+      padding: 0.62rem 0.75rem;
+      border: 1px solid transparent;
+      font-size: 0.92rem;
+    }
+
+    .status.loading {
+      color: #a8deff;
+      border-color: rgba(51, 209, 255, 0.4);
+      background: rgba(51, 209, 255, 0.1);
+    }
+
+    .status.error {
+      color: #ffd3da;
+      border-color: rgba(255, 107, 129, 0.45);
+      background: rgba(255, 107, 129, 0.14);
+    }
+
+    .status.ok {
+      color: #ccffef;
+      border-color: rgba(71, 215, 172, 0.45);
+      background: rgba(71, 215, 172, 0.12);
+    }
+
+    h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1.04rem;
+      letter-spacing: 0.01em;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.65rem;
+    }
+
+    .chip {
+      padding: 0.36rem 0.62rem;
+      border-radius: 999px;
+      font-size: 0.83rem;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.45rem 0.75rem;
+      margin-top: 0.65rem;
+    }
+
+    .kv div {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.3rem 0;
+      font-size: 0.92rem;
+    }
+
+    .v-score {
+      margin-top: 0.5rem;
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .bar-wrap {
+      display: grid;
+      grid-template-columns: 170px 1fr 40px;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.86rem;
+    }
+
+    @media (max-width: 500px) {
+      .bar-wrap { grid-template-columns: 1fr; }
+    }
+
+    .bar {
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #5ed1ff, #9e63ff);
+    }
+
+    ul {
+      margin: 0.55rem 0 0;
+      padding-left: 1.15rem;
+      color: #d8dff8;
+    }
+
+    li { margin: 0.25rem 0; }
+    .hidden { display: none; }
+  </style>
+</head>
 <body>
-    <h1>Echovault</h1>
-    <h2>Nahom Kassaye, Michael Togbe, Anugrah Zachary</h2>
+  <main class="container">
+    <section class="panel hero">
+      <div>
+        <span class="badge">Echo Vault</span>
+        <h1>Password Psychology Analyzer</h1>
+        <p>Paste at least two passwords and get crackability + AI-driven pattern intelligence from your backend.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <label for="passwordInput">Passwords (one per line)</label>
+      <textarea id="passwordInput" placeholder="Dragon2022!&#10;Dragon2023!&#10;Dragon2024*"></textarea>
+      <div class="controls">
+        <span class="hint">Backend target: <code id="backendTarget"></code></span>
+        <button id="analyzeBtn">Analyze Password Patterns</button>
+      </div>
+      <div id="status" class="status hidden"></div>
+    </section>
+
+    <section id="results" class="grid hidden">
+      <article class="panel">
+        <h2>Crackability Scores</h2>
+        <div id="scoreTable" class="kv"></div>
+      </article>
+      <article class="panel">
+        <h2>Psychological Fingerprint</h2>
+        <p id="fingerprintText"></p>
+        <div class="chips" id="patternChips"></div>
+      </article>
+      <article class="panel">
+        <h2>Predicted Attacker Wordlist</h2>
+        <ul id="wordlist"></ul>
+      </article>
+      <article class="panel">
+        <h2>Vulnerability Breakdown</h2>
+        <div id="vulnerabilityBars" class="v-score"></div>
+      </article>
+      <article class="panel">
+        <h2>Actionable Tips</h2>
+        <ul id="tips"></ul>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    function getCandidateApiEndpoints() {
+      const endpoints = [];
+      const host = window.location.hostname;
+      if (host) {
+        endpoints.push(`http://${host}:5000/analyze`);
+      }
+      endpoints.push("http://127.0.0.1:5000/analyze");
+      endpoints.push("http://localhost:5000/analyze");
+
+      // Remove duplicates while preserving order.
+      return [...new Set(endpoints)];
+    }
+
+    const apiEndpoints = getCandidateApiEndpoints();
+    const backendTargetEl = document.getElementById("backendTarget");
+    backendTargetEl.textContent = apiEndpoints[0];
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const passwordInput = document.getElementById("passwordInput");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+    const scoreTableEl = document.getElementById("scoreTable");
+    const fingerprintTextEl = document.getElementById("fingerprintText");
+    const patternChipsEl = document.getElementById("patternChips");
+    const wordlistEl = document.getElementById("wordlist");
+    const vulnerabilityBarsEl = document.getElementById("vulnerabilityBars");
+    const tipsEl = document.getElementById("tips");
+
+    function showStatus(type, message) {
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+    }
+
+    function listFrom(value) {
+      return Array.isArray(value) ? value : [];
+    }
+
+    function objectFrom(value) {
+      return value && typeof value === "object" ? value : {};
+    }
+
+    function renderList(target, items) {
+      target.innerHTML = "";
+      listFrom(items).forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = String(item);
+        target.appendChild(li);
+      });
+    }
+
+    function renderResults(payload) {
+      const scores = objectFrom(payload.scores);
+      const report = objectFrom(payload.ai_report);
+      const vulnerabilityScores = objectFrom(report.vulnerability_scores);
+
+      scoreTableEl.innerHTML = "";
+      Object.entries(scores).forEach(([password, score]) => {
+        const key = document.createElement("div");
+        key.textContent = password;
+        const val = document.createElement("div");
+        val.textContent = `${score}`;
+        scoreTableEl.append(key, val);
+      });
+
+      fingerprintTextEl.textContent = report.fingerprint_summary || "No AI summary available.";
+
+      patternChipsEl.innerHTML = "";
+      listFrom(report.patterns).forEach((pattern) => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = String(pattern);
+        patternChipsEl.appendChild(chip);
+      });
+
+      renderList(wordlistEl, report.attacker_wordlist);
+      renderList(tipsEl, report.tips);
+
+      vulnerabilityBarsEl.innerHTML = "";
+      Object.entries(vulnerabilityScores).forEach(([key, rawVal]) => {
+        const score = Number(rawVal) || 0;
+        const safeScore = Math.max(0, Math.min(100, score));
+        const row = document.createElement("div");
+        row.className = "bar-wrap";
+        row.innerHTML = `
+          <span>${key.replaceAll("_", " ")}</span>
+          <div class="bar"><span style="width: ${safeScore}%;"></span></div>
+          <strong>${safeScore}</strong>
+        `;
+        vulnerabilityBarsEl.appendChild(row);
+      });
+
+      resultsEl.classList.remove("hidden");
+    }
+
+    async function parseResponseSafely(response) {
+      const raw = await response.text();
+      try {
+        return JSON.parse(raw);
+      } catch (_err) {
+        return { error: raw || "Server returned a non-JSON response." };
+      }
+    }
+
+    async function requestAnalysis(passwords) {
+      let lastError = null;
+
+      for (const endpoint of apiEndpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ passwords })
+          });
+
+          const body = await parseResponseSafely(res);
+          if (!res.ok) {
+            const message = body && body.error ? body.error : "Request failed";
+            throw new Error(message);
+          }
+
+          return body;
+        } catch (err) {
+          lastError = err;
+          // Network-level failure (e.g. backend not running) should try next endpoint.
+          if (err instanceof TypeError) {
+            continue;
+          }
+          // App-level error reached backend; no value in trying other equivalent endpoints.
+          break;
+        }
+      }
+
+      throw lastError || new Error("Unable to reach backend.");
+    }
+
+    analyzeBtn.addEventListener("click", async () => {
+      const passwords = passwordInput.value
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      if (passwords.length < 2) {
+        showStatus("error", "Enter at least 2 passwords (one per line).");
+        return;
+      }
+
+      analyzeBtn.disabled = true;
+      showStatus("loading", "Analyzing with backend + Gemini...");
+
+      try {
+        const body = await requestAnalysis(passwords);
+        renderResults(body);
+        showStatus("ok", "Analysis complete.");
+      } catch (err) {
+        const message = err && err.message ? err.message : "Unknown error";
+        if (message === "Failed to fetch") {
+          showStatus(
+            "error",
+            "Cannot connect to backend on port 5000. Start Flask and check CORS/network."
+          );
+        } else {
+          showStatus("error", `Failed to analyze: ${message}`);
+        }
+      } finally {
+        analyzeBtn.disabled = false;
+      }
+    });
+  </script>
 </body>
-</html> 
+</html>
