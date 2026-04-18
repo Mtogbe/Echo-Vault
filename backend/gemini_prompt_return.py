@@ -107,7 +107,7 @@ def analyze_passwords(passwords, crackability_scores):
     (Note: A score of 0 means uncrackable, 100 means instantly crackable).
     
     Incorporate these scores into your analysis. If the score is high, your fingerprint_summary 
-    should reflect the severe vulnerability, and your tips should be more urgent.
+    should reflect the severe vulnerability, and your tips should be more urgent. 
     
     Return a JSON object with this exact structure:
     {{
