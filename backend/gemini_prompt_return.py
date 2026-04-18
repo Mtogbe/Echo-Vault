@@ -1,10 +1,73 @@
 import google.generativeai as genai
 import os
 import json
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+_BACKEND_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT = _BACKEND_DIR.parent
+# Load .env from repo root first (Flask cwd is often backend/)
+load_dotenv(_PROJECT_ROOT / ".env")
+load_dotenv(_BACKEND_DIR / ".env")
+
+_api_key = (os.getenv("GEMINI_API_KEY") or "").strip()
+if _api_key:
+    genai.configure(api_key=_api_key)
+
+# Used only if list_models() fails or returns nothing
+STATIC_MODEL_FALLBACKS = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-preview-05-20",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash-8b",
+    "gemini-1.5-flash-001",
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-flash",
+]
+
+
+def _strip_models_prefix(name: str) -> str:
+    if name.startswith("models/"):
+        return name[len("models/") :]
+    return name
+
+
+def discover_generate_content_models():
+    """Ask the API which model IDs support generateContent for this key."""
+    names = []
+    try:
+        for m in genai.list_models():
+            methods = getattr(m, "supported_generation_methods", None) or []
+            if "generateContent" in methods and m.name:
+                names.append(_strip_models_prefix(m.name))
+    except Exception as err:
+        print(f"list_models failed: {err}")
+    return names
+
+
+def ordered_model_candidates():
+    """Prefer newer flash models, then any other generateContent-capable model."""
+    discovered = discover_generate_content_models()
+    priority_keywords = (
+        "gemini-2.5",
+        "gemini-2.0",
+        "gemini-1.5",
+        "gemini",
+    )
+    ordered = []
+    for kw in priority_keywords:
+        for n in discovered:
+            if kw in n.lower() and n not in ordered:
+                ordered.append(n)
+    for n in discovered:
+        if n not in ordered:
+            ordered.append(n)
+    for n in STATIC_MODEL_FALLBACKS:
+        if n not in ordered:
+            ordered.append(n)
+    return ordered
+
 
 def parse_gemini_json(raw_text):
     """Safely extracts JSON from the AI's text response."""
@@ -30,8 +93,6 @@ def parse_gemini_json(raw_text):
         }
 
 def analyze_passwords(passwords, crackability_scores):
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    
     system_instruction = (
         "You are a cybersecurity pattern-matching engine. "
         "Analyze the provided passwords for cognitive biases and psychological patterns. "
@@ -64,10 +125,22 @@ def analyze_passwords(passwords, crackability_scores):
     }}
     """
 
+    if not _api_key:
+        raise RuntimeError("GEMINI_API_KEY is missing. Set it in .env at the project root.")
+
     full_prompt = f"{system_instruction}\n{user_input}"
-    response = model.generate_content(full_prompt)
-    
-    return parse_gemini_json(response.text)
+    last_error = None
+
+    for model_name in ordered_model_candidates():
+        try:
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(full_prompt)
+            return parse_gemini_json(response.text)
+        except Exception as err:
+            last_error = err
+            print(f"Model attempt failed ({model_name}): {err}")
+
+    raise RuntimeError(f"All Gemini model attempts failed: {last_error}")
 
 
 if __name__ == "__main__":
